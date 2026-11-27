@@ -1,0 +1,12 @@
+name: jpeg-png-7z-glob-i1
+spec_version: 1
+summary: One image per member (JPEG or PNG, told apart by magic bytes) from the members of 7z archives chosen by glob, stacked along z; a colour member's samples are a c axis (zcyx), and with the param `palette` set to `index` a palette PNG is its stored indices (an indexed class or instance mask). Each url is a 7z archive staged whole; its header is parsed with the standard library and folders packed with LZMA2, LZMA or Copy are decoded, solid ones included.
+formats: [jpeg, png]
+containers: [http, s3]
+params:
+  members: {type: str, required: true, doc: "glob over the 7z member names (fnmatch syntax, case-sensitive; `*` also crosses `/`), e.g. dataset/JPEGImages/*.jpg; applied to every url's archive. The matches of one url are sorted by member name, the urls concatenated in binding order"}
+  palette: {type: str, required: false, doc: "'index': a palette (indexed-colour) PNG member is returned as its stored palette indices, uint8 with no c axis (the ids of a mask saved as an indexed PNG), never as the palette's colours. Without it a palette PNG raises; reason required in binding"}
+  pair_members: {type: str, required: false, doc: "glob over the member names of the same archive that the paired array's `members` is (a label names its raw's glob). The matches of `members` are then ordered as the sorted matches of this glob, each by its file stem (the name without directories and last extension), and open fails unless the two sets pair one to one by stem; reason required in binding"}
+requires: [numpy, imagecodecs]
+tested_on: [zenodo-21501303-rice-stem-cross-sections]
+supersedes: null
