@@ -1,0 +1,25 @@
+record: zenodo-21501303-rice-stem-cross-sections
+record_commit: c89576673af7600da8240d96a92023633246c7c8
+snippets_commit: 93fdfcb34b36d880708059c989f3c328660370dc
+raw:
+  - snippet: jpeg-png-7z-glob-i1
+    urls: ["https://zenodo.org/records/21501303/files/dataset.7z"]
+    params: {members: "dataset/JPEGImages/*.jpg"}
+labels:
+  - snippet: jpeg-png-7z-glob-i1
+    urls: ["https://zenodo.org/records/21501303/files/dataset.7z"]
+    params: {members: "dataset/SegmentationClass/*.png", palette: index, pair_members: "dataset/JPEGImages/*.jpg"}
+    pairs_with: 0
+    label_key: manual_gt-rice_stem_tissue-semantic
+    segmentation_type: semantic
+reasons:
+  - "jpeg-png-7z-glob-i1 for raw and label: the record's only data file is dataset.7z, a 7z archive with one solid LZMA2 folder (dictionary 16 MiB, 210,450,067 bytes packed, 264,779,427 unpacked, 1,372 files), and no other snippet opens a 7z (the issue's smoke errors: 'File is not a zip file'). This snippet stages the archive, parses its header and decodes the members a glob picks, one per z plane; z is a stack of independent 2D sections (record dimensionality 2D), not a volume"
+  - "the url is the plain archive url and the member glob is the param `members`, not `<url>::<glob>` as in the draft: io and the harness read `::` as a zip member, and the archive is not a zip"
+  - "members dataset/JPEGImages/*.jpg (the record's raw path_pattern): 686 baseline RGB JPEGs, every one 3584x2748 (read from all 686 headers), read as zcyx (686, 3, 2748, 3584) uint8 with R, G, B as c; the record's yxs (2748, 3584, 3) is one of them"
+  - "members dataset/SegmentationClass/*.png (the record's label path_pattern): 686 PNGs, every one an 8-bit palette PNG (colour type 3) of 3584x2748, the grid of its image; the record had not read them (encoding unknown). Read as zyx (686, 2748, 3584) uint8"
+  - "palette index on the label: the masks store class ids as palette indices under the VOC colour map (the same PLTE in all 686: 0 (0,0,0), 1 (128,0,0), 2 (0,128,0), 3 (128,128,0), 4 (0,0,128), as LabelMe's VOC export writes; the record says they were made with the LabelMe script); a decoder would return those colours. Decoded as indices, all 686 masks hold only 0, 1, 2, 3, 4 (pixel share over the 686: 65.40%, 0.33%, 16.84%, 0.98%, 16.45%). No palette param on raw: JPEG has none"
+  - "class ids, found by viewing the masks of 21C-355-2 and zh11-3 beside their images (the record gives the names without ids): 0 background, 1 small vascular bundle (the small spots on the outer rim; LabelMe tag small), 2 cavity (the hollow centre; in), 3 large vascular bundle (the larger spots inside the ring; big), 4 stem (the tissue ring; out). In both masks id 4 covers the ring only: the bundles and the cavity inside the stem outline carry their own ids. The ids are returned as stored, 0 is background as the harness expects"
+  - "pair_members dataset/JPEGImages/*.jpg on the label: plane k of the label is the mask whose file stem is that of raw file k (JPEGImages/<stem>.jpg <-> SegmentationClass/<stem>.png, record alignment_notes), and open fails unless the 686 stems pair one to one, so the pairing does not rest on the two globs sorting alike. They do sort alike here (checked name by name). Names are sorted case-sensitively, which is not the archive's order (21C-355-2 comes first, before 21c-02)"
+  - "label_key manual_gt-rice_stem_tissue-semantic (from the draft): polygons drawn by hand in LabelMe (manual), four tissue classes of the rice stem cross-section with the ids above, one id per class and not per object: all the bundles of a class share its id, so segmentation_type semantic"
+  - "no voxel size from the files (the record read JFIF density 1x1; none of the 686 PNGs has a pHYs chunk), and the record has none. The images carry a burnt-in red scale bar that differs between images (labelled 500 µm on 21C-355-2 and 200 µm on zh11-3; 257 to 610 px long on eight images sampled), so there is not one pixel size for the stack; the snippet reports None"
+  - "snippets_commit is the commit before this snippet's own (a binding can't name the commit that adds it); a binding written by the worker names a commit that contains the snippet"
