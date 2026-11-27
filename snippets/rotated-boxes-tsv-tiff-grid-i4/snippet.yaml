@@ -1,0 +1,10 @@
+name: rotated-boxes-tsv-tiff-grid-i4
+spec_version: 1
+summary: "The per-image cell ROI tables `<stem>_roisCells.txt` of the TrypTag ImageJ macros (tab-separated, header cell, xWand, yWand, xCentre, yCentre, width, height, angle: one rotated box per cell, in pixels of `<stem>.tif`, the angle ImageJ's ellipse angle), each rasterised on the grid of its image's TIFF header as one z plane, every box filled with its cell number (uint16, 0 background; a pixel of several boxes takes the one whose centre is nearest). Tables are zip members or files of an HTTP directory chosen by glob (or plain URLs); the planes follow the images `params.images` names, in that order, and images and tables must pair one to one."
+formats: [csv]
+containers: [http, zip]
+params:
+  images: {type: list, required: true, doc: "the urls (globs included) of the TIFF images the tables were written for, exactly as the image array's binding lists them. The planes are these images in that order, each with the table `<stem>_roisCells.txt` beside it (`<stem>.tif` or `.tiff`) and on the grid its own TIFF header gives; an image without a table, or a table without an image, raises. Reason required in binding"}
+requires: [numpy, tifffile, imagecodecs]
+tested_on: [s-biad1932-t-brucei-bloodstream-protein-localisation]
+supersedes: null

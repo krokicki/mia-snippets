@@ -1,0 +1,72 @@
+record: s-biad1932-t-brucei-bloodstream-protein-localisation
+record_commit: c89576673af7600da8240d96a92023633246c7c8
+snippets_commit: 93fdfcb34b36d880708059c989f3c328660370dc
+raw:
+- snippet: tiff-channels-glob
+  urls:
+  - https://ftp.ebi.ac.uk/biostudies/fire/S-BIAD/932/S-BIAD1932/Files/R1566_20180201/::*_[NC]_*[0-9].tif
+  - https://ftp.ebi.ac.uk/biostudies/fire/S-BIAD/932/S-BIAD1932/Files/R7852_20180328/::*_[NC]_*[0-9].tif
+  - https://ftp.ebi.ac.uk/biostudies/fire/S-BIAD/932/S-BIAD1932/Files/R7854_20180403/::*_[NC]_*[0-9].tif
+  - https://ftp.ebi.ac.uk/biostudies/fire/S-BIAD/932/S-BIAD1932/Files/R7856_20180612/::*_[NC]_*[0-9].tif
+  params: {}
+labels:
+- snippet: rotated-boxes-tsv-tiff-grid-i4
+  urls:
+  - https://ftp.ebi.ac.uk/biostudies/fire/S-BIAD/932/S-BIAD1932/Files/R1566_20180201/::*_roisCells.txt
+  - https://ftp.ebi.ac.uk/biostudies/fire/S-BIAD/932/S-BIAD1932/Files/R7852_20180328/::*_roisCells.txt
+  - https://ftp.ebi.ac.uk/biostudies/fire/S-BIAD/932/S-BIAD1932/Files/R7854_20180403/::*_roisCells.txt
+  - https://ftp.ebi.ac.uk/biostudies/fire/S-BIAD/932/S-BIAD1932/Files/R7856_20180612/::*_roisCells.txt
+  params:
+    images:
+    - https://ftp.ebi.ac.uk/biostudies/fire/S-BIAD/932/S-BIAD1932/Files/R1566_20180201/::*_[NC]_*[0-9].tif
+    - https://ftp.ebi.ac.uk/biostudies/fire/S-BIAD/932/S-BIAD1932/Files/R7852_20180328/::*_[NC]_*[0-9].tif
+    - https://ftp.ebi.ac.uk/biostudies/fire/S-BIAD/932/S-BIAD1932/Files/R7854_20180403/::*_[NC]_*[0-9].tif
+    - https://ftp.ebi.ac.uk/biostudies/fire/S-BIAD/932/S-BIAD1932/Files/R7856_20180612/::*_[NC]_*[0-9].tif
+  pairs_with: 0
+  label_key: manual_gt-cell-instance
+  segmentation_type: instance
+reasons:
+- >-
+  tiff-channels-glob for the raw, kept from the draft: the record's raw array is one 3-channel ImageJ TIFF per
+  field (cyx 3x2160x2560 uint16, shape_varies false); the snippet stacks the files as zcyx, z being the field
+  (independent 2D images, not depth). The first file's ImageJ header names the channels Phase Contrast,
+  F L5 Fluorescence, F A4 Fluorescence, in that order
+- >-
+  raw urls, kept from the draft: the record's download_url Files/ is a directory of four plate folders. One
+  glob per folder with the record's path_pattern *_[NC]_*[0-9].tif, which leaves out *_thr.tif; the globs match
+  668 + 386 + 419 + 363 = 1836 files, the record's n_items
+- >-
+  rotated-boxes-tsv-tiff-grid-i4 for the label instead of the draft's tiff-yolo-boxes-stems, which stood for
+  the snippet that was needed: the record's *_roisCells.txt (boxes-table, same-grid; tab-separated columns
+  cell, xWand, yWand, xCentre, yCentre, width, height, angle) are rotated boxes in pixels of the .tif of the
+  same stem, not YOLO fraction rows, and one per cell. One glob per folder, *_roisCells.txt, 668 + 386 + 419 +
+  363 = 1836 tables, one beside every raw image
+- >-
+  images on the label: the urls of the raw, exactly as the raw lists them. The label's planes are those images
+  in that order, each with the table <stem>_roisCells.txt beside it, so z index k of the label is the table of
+  z index k of the raw; the snippet refuses to open unless images and tables pair one to one. The table names
+  sorted would not give the raw's order (..._C_1_roisCells.txt sorts after ..._C_10_roisCells.txt, ..._C_1.tif
+  before ..._C_10.tif). Each plane is on the grid its own image's TIFF header gives (2160x2560)
+- >-
+  how the boxes are read (the snippet's rule, no param): centre (xCentre, yCentre) in ImageJ pixel coordinates,
+  width along the angle and height across it, the angle counter-clockwise from +x as displayed (ImageJ's
+  ellipse angle). Measured on the record's sample field Tb427.01.2670_4_C_1 against plane 0 of its _thr.tif:
+  all 61 centres are the centroid of the thresholded component under (xWand, yWand) to the 4 decimals written,
+  all 61 angles its major axis to 0.1 degree, and every component lies wholly inside its box. Every box is
+  322.56 x 161.28 px, so boxes overlap; a pixel in several holds the cell whose centre is nearest
+- >-
+  segmentation_type instance: each box is filled with its row's cell number, 1..n per image (61 on the sample
+  field), 0 background; uint16, where the record gives the tables no dtype
+- >-
+  label_key manual_gt-cell-instance, kept from the draft: it gives the record's annotations.source as manual,
+  which the rule maps to manual_gt, and the tables mark single cells. A person should look at this key: the boxes
+  themselves are automatic (record alignment_notes; and the centres and angles are computed from the
+  thresholded image, as measured above), the manual annotation being the per-image localisation term, so
+  auto_pred may be meant. They are also windows around cells, not cell outlines
+- >-
+  not bound: *_thr.tif (record encoding unknown, classes null). On the sample field plane 0 is the cell masks
+  the table rows were measured from (one component per row) and plane 1 a second threshold on the brightest
+  signal of the third channel, but nothing in the record or the files says what each plane marks, so no class
+  is given here; this snippet does not read them
+- >-
+  not bound: the per-image localisation JSON (encoding other, an image-level term, not a pixel label)
